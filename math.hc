@@ -55,11 +55,11 @@ F64 ParseFactor(U8 **str) {
   }
 
   if (**str == '(') {
-    (*str)++; // Пропускаем '('
+    (*str)++;
     F64 val = ParseExpression(str);
     SkipWhitespace(str);
     if (**str == ')') {
-      (*str)++; // Пропускаем ')'
+      (*str)++;
     }
     return val;
   }
