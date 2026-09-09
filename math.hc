@@ -1,9 +1,3 @@
-U0 SkipWhitespace(U8 **str) {
-  while (**str == ' ' || **str == '\t' || **str == '\n' || **str == '\r') {
-    (*str)++;
-  }
-}
-
 U0 StrCat(U8 *dst, U8 *src) {
   while (*dst != 0) {
     dst++;
@@ -16,10 +10,20 @@ U0 StrCat(U8 *dst, U8 *src) {
   *dst = 0;
 }
 
+U0 StripSpaces(U8 *dst, U8 *src) {
+  while (*src != 0) {
+    if (*src != ' ' && *src != '\t' && *src != '\r' && *src != '\n') {
+      *dst = *src;
+      dst++;
+    }
+    src++;
+  }
+  *dst = 0;
+}
+
 F64 ParseExpression(U8 **str);
 
 F64 ParseNumber(U8 **str) {
-  SkipWhitespace(str);
   F64 val = 0.0;
   F64 div = 1.0;
   Bool has_dot = FALSE;
@@ -42,8 +46,6 @@ F64 ParseNumber(U8 **str) {
 }
 
 F64 ParseFactor(U8 **str) {
-  SkipWhitespace(str);
-
   if (**str == '+') {
     (*str)++;
     return ParseFactor(str);
@@ -57,7 +59,6 @@ F64 ParseFactor(U8 **str) {
   if (**str == '(') {
     (*str)++;
     F64 val = ParseExpression(str);
-    SkipWhitespace(str);
     if (**str == ')') {
       (*str)++;
     }
@@ -67,12 +68,17 @@ F64 ParseFactor(U8 **str) {
   return ParseNumber(str);
 }
 
-F64 ParseTerm(U8 **str) {
+F64 ParseExpression(U8 **str) {
   F64 left = ParseFactor(str);
 
-  while (TRUE) {
-    SkipWhitespace(str);
-    if (**str == '*') {
+  while (**str != 0 && **str != ')') {
+    if (**str == '+') {
+      (*str)++;
+      left += ParseFactor(str);
+    } else if (**str == '-') {
+      (*str)++;
+      left -= ParseFactor(str);
+    } else if (**str == '*') {
       (*str)++;
       left *= ParseFactor(str);
     } else if (**str == '/') {
@@ -92,25 +98,6 @@ F64 ParseTerm(U8 **str) {
   return left;
 }
 
-F64 ParseExpression(U8 **str) {
-  F64 left = ParseTerm(str);
-
-  while (TRUE) {
-    SkipWhitespace(str);
-    if (**str == '+') {
-      (*str)++;
-      left += ParseTerm(str);
-    } else if (**str == '-') {
-      (*str)++;
-      left -= ParseTerm(str);
-    } else {
-      break;
-    }
-  }
-
-  return left;
-}
-
 U0 PrintResult(F64 val) {
   I64 int_val = val;
   if (val == int_val) {
@@ -121,24 +108,23 @@ U0 PrintResult(F64 val) {
 }
 
 I64 Main(I64 argc, U8 **argv) {
-  U8 expr[2048];
-  expr[0] = 0;
+  U8 raw_expr[2048];
+  U8 clean_expr[2048];
+  raw_expr[0] = 0;
 
   if (argc < 2) {
     "Usage: math <expression>\n";
-    "Example: math 2+2\n";
     return 1;
   }
 
   I64 i;
   for (i = 1; i < argc; i++) {
-    if (i > 1) {
-      StrCat(expr, " ");
-    }
-    StrCat(expr, argv[i]);
+    StrCat(raw_expr, argv[i]);
   }
 
-  U8 *ptr = expr;
+  StripSpaces(clean_expr, raw_expr);
+
+  U8 *ptr = clean_expr;
   F64 result = ParseExpression(&ptr);
 
   PrintResult(result);
