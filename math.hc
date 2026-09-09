@@ -129,13 +129,12 @@ I64 Main(I64 argc, U8 **argv) {
   raw_expr[0] = 0;
 
   if (argc < 2) {
-    "Usage: math '<expression>'\n";
-    "Example: math '2 + 2'\n";
+    "Usage: math 'expression'\n";
     return 1;
   }
 
   if (!StrCmp(argv[1], "--version")) {
-    "math v1.2\n";
+    "math v1.3\n";
     return 0;
   }
 
