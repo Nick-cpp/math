@@ -10,6 +10,14 @@ U0 StrCat(U8 *dst, U8 *src) {
   *dst = 0;
 }
 
+I64 StrCmp(U8 *s1, U8 *s2) {
+  while (*s1 && (*s1 == *s2)) {
+    s1++;
+    s2++;
+  }
+  return *s1 - *s2;
+}
+
 U0 StripSpaces(U8 *dst, U8 *src) {
   while (*src != 0) {
     if (*src != ' ' && *src != '\t' && *src != '\r' && *src != '\n') {
@@ -68,17 +76,11 @@ F64 ParseFactor(U8 **str) {
   return ParseNumber(str);
 }
 
-F64 ParseExpression(U8 **str) {
+F64 ParseTerm(U8 **str) {
   F64 left = ParseFactor(str);
 
-  while (**str != 0 && **str != ')') {
-    if (**str == '+') {
-      (*str)++;
-      left += ParseFactor(str);
-    } else if (**str == '-') {
-      (*str)++;
-      left -= ParseFactor(str);
-    } else if (**str == '*') {
+  while (**str == '*' || **str == '/') {
+    if (**str == '*') {
       (*str)++;
       left *= ParseFactor(str);
     } else if (**str == '/') {
@@ -90,8 +92,22 @@ F64 ParseExpression(U8 **str) {
         "Error: Division by zero\n";
         return 0.0;
       }
-    } else {
-      break;
+    }
+  }
+
+  return left;
+}
+
+F64 ParseExpression(U8 **str) {
+  F64 left = ParseTerm(str);
+
+  while (**str == '+' || **str == '-') {
+    if (**str == '+') {
+      (*str)++;
+      left += ParseTerm(str);
+    } else if (**str == '-') {
+      (*str)++;
+      left -= ParseTerm(str);
     }
   }
 
@@ -113,8 +129,14 @@ I64 Main(I64 argc, U8 **argv) {
   raw_expr[0] = 0;
 
   if (argc < 2) {
-    "Usage: math <expression>\n";
+    "Usage: math '<expression>'\n";
+    "Example: math '2 + 2'\n";
     return 1;
+  }
+
+  if (!StrCmp(argv[1], "--version")) {
+    "math v1.2\n";
+    return 0;
   }
 
   I64 i;
