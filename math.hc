@@ -115,7 +115,39 @@ F64 ParseExpression(U8 **str) {
 }
 
 U0 PrintResult(F64 val) {
-  "%.10f\n", val;
+  if (val < 0) {
+    "-";
+    val = -val;
+  }
+
+  I64 int_part = val;
+  F64 frac_part = val - int_part;
+
+  "%d", int_part;
+
+  if (frac_part >= 0.0000000001) {
+    ".";
+    U8 buf[16];
+    I64 len = 0;
+    I64 i;
+    I64 digit;
+
+    for (i = 0; i < 10; i++) {
+      frac_part *= 10.0;
+      digit = frac_part;
+      buf[len++] = '0' + digit;
+      frac_part -= digit;
+    }
+
+    while (len > 0 && buf[len - 1] == '0') {
+      len--;
+    }
+
+    for (i = 0; i < len; i++) {
+      "%c", buf[i];
+    }
+  }
+  "\n";
 }
 
 I64 Main(I64 argc, U8 **argv) {
@@ -129,7 +161,7 @@ I64 Main(I64 argc, U8 **argv) {
   }
 
   if (!StrCmp(argv[1], "--version")) {
-    "math v1.4\n";
+    "math v1.5\n";
     return 0;
   }
 
