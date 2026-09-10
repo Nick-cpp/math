@@ -115,12 +115,7 @@ F64 ParseExpression(U8 **str) {
 }
 
 U0 PrintResult(F64 val) {
-  I64 int_val = val;
-  if (val == int_val) {
-    "%d\n", int_val;
-  } else {
-    "%f\n", val;
-  }
+  "%.10f\n", val;
 }
 
 I64 Main(I64 argc, U8 **argv) {
@@ -134,7 +129,7 @@ I64 Main(I64 argc, U8 **argv) {
   }
 
   if (!StrCmp(argv[1], "--version")) {
-    "math v1.3\n";
+    "math v1.4\n";
     return 0;
   }
 
